@@ -13,22 +13,28 @@ import android.os.RemoteException;
 
 public class DeveloperTestApplication extends Application {
 	
-	static final int MSG_OUT_REGISTER = 1;
-	static final int MSG_OUT_ON_BROADCAST = 2;
-	static final int MSG_OUT_GET_STATE = 3;
-
-	static final int MSG_IN_OK = 999;
-	static final int MSG_IN_ERROR = 1000;
-	static final int MSG_IN_ON_RIDE_START = 1001;
-	static final int MSG_IN_ON_RIDE_FINISH = 1002;
-	static final int MSG_IN_STATE = 1003;
-
-	static final int STATE_WAITING = 1;
-	static final int STATE_BROADCASTING = 2;
-	static final int STATE_RIDE = 3;
+	public static DeveloperTestApplication sInstance;
 	
-	public static final String SERVICE_NAME = "com.adleritech.android.developertest.SimulatorService";
-    public ServiceConnection mConnection = new ServiceConnection() {
+	protected static final int MSG_OUT_REGISTER = 1;
+	protected static final int MSG_OUT_ON_BROADCAST = 2;
+	protected static final int MSG_OUT_GET_STATE = 3;
+
+	protected static final int MSG_IN_OK = 999;
+	protected static final int MSG_IN_ERROR = 1000;
+	protected static final int MSG_IN_ON_RIDE_START = 1001;
+	protected static final int MSG_IN_ON_RIDE_FINISH = 1002;
+	protected static final int MSG_IN_STATE = 1003;
+
+	protected static final int STATE_WAITING = 1;
+	protected static final int STATE_BROADCASTING = 2;
+	protected static final int STATE_RIDE = 3;
+	
+	protected static final String SERVICE_NAME = "com.adleritech.android.developertest.SimulatorService";
+	
+	protected int mCurrentState  = STATE_WAITING;
+	
+	
+    protected ServiceConnection mConnection = new ServiceConnection() {
     
     class IncomingHandler extends Handler {
         @Override
@@ -71,9 +77,12 @@ public class DeveloperTestApplication extends Application {
 	@Override
 	public void onCreate() {
 		super.onCreate();
-	      Intent intent = new Intent(SERVICE_NAME);
-	      bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-
+		sInstance = this;
+		Intent intent = new Intent(SERVICE_NAME);
+		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 	}
-
+	
+	public void unbindService() {
+		unbindService(mConnection);
+	}
 }
