@@ -40,7 +40,11 @@ public class DeveloperTestApplication extends Application {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case  MSG_IN_OK:
+                case  MSG_IN_STATE:
+                	switch (msg.arg1)
+                	{
+                	
+                	}
                     break;
                 default:
                 	break;
