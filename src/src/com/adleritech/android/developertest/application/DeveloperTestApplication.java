@@ -43,7 +43,12 @@ public class DeveloperTestApplication extends Application {
                 case  MSG_IN_STATE:
                 	switch (msg.arg1)
                 	{
-                	
+                	case STATE_WAITING:
+                	case STATE_BROADCASTING:
+                	case STATE_RIDE:
+                		Intent intent = new Intent(sInstance, RideActivity.class);
+                		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                		sInstance.startActivity(intent);
                 	}
                     break;
                 default:
