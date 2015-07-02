@@ -17,6 +17,7 @@ public class DeveloperTestApplication extends Application {
 
 	public static DeveloperTestApplication sInstance;
 
+	protected static final int MSG_OUT_NOTHING = 0;
 	protected static final int MSG_OUT_REGISTER = 1;
 	protected static final int MSG_OUT_ON_BROADCAST = 2;
 	protected static final int MSG_OUT_GET_STATE = 3;
@@ -35,6 +36,8 @@ public class DeveloperTestApplication extends Application {
 	protected static final String SERVICE_NAME = "com.adleritech.android.developertest.SimulatorService";
 
 	protected int mCurrentState = STATE_UNDEFINED;
+	protected int mLastMessageSent = MSG_OUT_NOTHING;
+			
 	public Activity mCurrentActivity = null;
 	protected Messenger mService = null;
 	protected final Messenger mMessenger = new Messenger(new IncomingHandler());
@@ -74,37 +77,96 @@ public class DeveloperTestApplication extends Application {
 	}
 	
 	
+	
 	class IncomingHandler extends Handler {
+		
+		protected void handleOutNothing(Message msg)
+		{
+			switch (msg.what) {
+			case MSG_IN_ON_RIDE_START:
+				if (mCurrentState == STATE_BROADCASTING)
+				{
+					startActivityIfNeeded(RideActivity.class, STATE_RIDE);
+					mCurrentState = STATE_RIDE;
+				}
+				else
+				{
+					DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
+				}
+				break;
+			case MSG_IN_ON_RIDE_FINISH:
+				if (mCurrentState == STATE_RIDE)
+				{
+					mBroadcastButtonPressed = false;
+					startActivityIfNeeded(WaitingActivity.class, STATE_WAITING);
+					mCurrentState = STATE_WAITING;
+				}
+				else
+				{
+					DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
+				}
+				
+				break;
+			
+			default:
+				DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
+				break;
+			}
+			
+		}
+		
+		protected void handleOutRegister(Message msg)
+		{
+			switch (msg.what) {
+			case MSG_IN_STATE:
+				handleInState(msg.arg1);
+				break;
+			default:
+				DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
+				break;
+			}
+		}
+		
+		protected void handleOutGetState(Message msg)
+		{
+			handleOutRegister(msg);
+		}
+		
+		protected void handleOutOnBroadcast(Message msg)
+		{
+			switch (msg.what) {
+			case MSG_IN_OK:
+				startActivityIfNeeded(BroadcastingActivity.class, STATE_BROADCASTING);
+				mCurrentState = STATE_BROADCASTING;
+				break;
+			case MSG_IN_ERROR:
+				handleInState(msg.arg1);
+				break;
+			default:
+				DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
+				break;
+			}
+		}
 		
 		@Override
 		public void handleMessage(Message msg) {
 			if (!mBound)
 				return;
-			switch (msg.what) {
-			case MSG_IN_STATE:
-				handleInState(msg.arg1);
+			final int lastMessageSent = mLastMessageSent;
+			mLastMessageSent = MSG_OUT_NOTHING;
+			switch (lastMessageSent)
+			{
+			case MSG_OUT_NOTHING:
+				handleOutNothing(msg);
 				break;
-			case MSG_IN_OK:
-				if (getCurrentState() == STATE_WAITING)
-				{
-					startActivityIfNeeded(BroadcastingActivity.class, STATE_BROADCASTING);
-					mCurrentState = STATE_BROADCASTING;
-				}
+			case MSG_OUT_REGISTER:
+				handleOutRegister(msg);
 				break;
-			case MSG_IN_ERROR:
-				handleInState(msg.arg1);
+			case MSG_OUT_GET_STATE:
+				handleOutGetState(msg);
 				break;
-			case MSG_IN_ON_RIDE_FINISH:
-				mBroadcastButtonPressed = false;
-				startActivityIfNeeded(WaitingActivity.class, STATE_WAITING);
-				mCurrentState = STATE_WAITING;
-				break;
-			case MSG_IN_ON_RIDE_START:
-				startActivityIfNeeded(RideActivity.class, STATE_RIDE);
-				mCurrentState = STATE_RIDE;
-				break;
-			default:
-				DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
+			case MSG_OUT_ON_BROADCAST:
+				handleOutOnBroadcast(msg);
 				break;
 			}
 		}
@@ -145,6 +207,7 @@ public class DeveloperTestApplication extends Application {
 		} catch (RemoteException e) {
 			Toast.makeText(this, R.string.service_send_error, Toast.LENGTH_LONG).show();
 		}
+		mLastMessageSent = message;
 	}
 	
 	public void bindService()
