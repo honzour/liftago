@@ -53,31 +53,32 @@ public class DeveloperTestApplication extends Application {
 		}
 	};
 	
-	class IncomingHandler extends Handler {
-		
-		protected void handleInState(Message msg) {
-			switch (msg.arg1) {
-			case STATE_WAITING:
-				startActivityIfNeeded(WaitingActivity.class, msg.arg1);
-				break;
-			case STATE_BROADCASTING:
-				startActivityIfNeeded(BroadcastingActivity.class, msg.arg1);
-				break;
-			case STATE_RIDE:
-				startActivityIfNeeded(RideActivity.class, msg.arg1);
-				break;
-			default:
-				DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
-				break;
-			}
-			mCurrentState = msg.arg1;
+	public void handleInState(int newState) {
+		switch (newState) {
+		case STATE_WAITING:
+			startActivityIfNeeded(WaitingActivity.class, newState);
+			break;
+		case STATE_BROADCASTING:
+			startActivityIfNeeded(BroadcastingActivity.class, newState);
+			break;
+		case STATE_RIDE:
+			startActivityIfNeeded(RideActivity.class, newState);
+			break;
+		default:
+			DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
+			break;
 		}
+		mCurrentState = newState;
+	}
+	
+	
+	class IncomingHandler extends Handler {
 		
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_IN_STATE:
-				handleInState(msg);
+				handleInState(msg.arg1);
 				break;
 			case MSG_IN_OK:
 				if (getCurrentState() == STATE_WAITING)
@@ -87,7 +88,7 @@ public class DeveloperTestApplication extends Application {
 				}
 				break;
 			case MSG_IN_ERROR:
-				handleInState(msg);
+				handleInState(msg.arg1);
 				break;
 			case MSG_IN_ON_RIDE_FINISH:
 				startActivityIfNeeded(WaitingActivity.class, STATE_WAITING);
@@ -155,6 +156,7 @@ public class DeveloperTestApplication extends Application {
 		if (mBound)
 		{
 			mBound = false;
+			mCurrentState = STATE_UNDEFINED;
 			unbindService(mConnection);
 		}
 	}
