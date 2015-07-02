@@ -63,8 +63,11 @@ public class DeveloperTestApplication extends Application {
 					startActivity(WaitingActivity.class);
 					break;
 				case STATE_BROADCASTING:
+					startActivity(BroadcastingActivity.class);
+					break;
 				case STATE_RIDE:
-					
+					startActivity(RideActivity.class);
+					break;
 				}
 				break;
 			case MSG_IN_OK:

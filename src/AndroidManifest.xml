@@ -26,5 +26,13 @@
         <activity
             android:name="WaitingActivity"
             android:label="@string/waiting_waiting" />
+        
+        <activity
+            android:name="RideActivity"
+            android:label="@string/ride" />
+                
+        <activity
+            android:name="BroadcastingActivity"
+            android:label="@string/broadcasting" />
     </application>
 </manifest>
