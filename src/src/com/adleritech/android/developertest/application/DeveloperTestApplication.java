@@ -27,13 +27,14 @@ public class DeveloperTestApplication extends Application {
 	protected static final int MSG_IN_ON_RIDE_FINISH = 1002;
 	protected static final int MSG_IN_STATE = 1003;
 
+	protected static final int STATE_UNDEFINED = 0;
 	protected static final int STATE_WAITING = 1;
 	protected static final int STATE_BROADCASTING = 2;
 	protected static final int STATE_RIDE = 3;
 
 	protected static final String SERVICE_NAME = "com.adleritech.android.developertest.SimulatorService";
 
-	protected int mCurrentState = STATE_WAITING;
+	protected int mCurrentState = STATE_UNDEFINED;
 	public Activity mCurrentActivity = null;
 	protected Messenger mService = null;
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
@@ -57,13 +58,13 @@ public class DeveloperTestApplication extends Application {
 		protected void handleInState(Message msg) {
 			switch (msg.arg1) {
 			case STATE_WAITING:
-				startActivity(WaitingActivity.class);
+				startActivityIfNeeded(WaitingActivity.class, msg.arg1);
 				break;
 			case STATE_BROADCASTING:
-				startActivity(BroadcastingActivity.class);
+				startActivityIfNeeded(BroadcastingActivity.class, msg.arg1);
 				break;
 			case STATE_RIDE:
-				startActivity(RideActivity.class);
+				startActivityIfNeeded(RideActivity.class, msg.arg1);
 				break;
 			default:
 				DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
@@ -81,20 +82,20 @@ public class DeveloperTestApplication extends Application {
 			case MSG_IN_OK:
 				if (getCurrentState() == STATE_WAITING)
 				{
+					startActivityIfNeeded(BroadcastingActivity.class, STATE_BROADCASTING);
 					mCurrentState = STATE_BROADCASTING;
-					startActivity(BroadcastingActivity.class);
 				}
 				break;
 			case MSG_IN_ERROR:
 				handleInState(msg);
 				break;
 			case MSG_IN_ON_RIDE_FINISH:
+				startActivityIfNeeded(WaitingActivity.class, STATE_WAITING);
 				mCurrentState = STATE_WAITING;
-				startActivity(WaitingActivity.class);
 				break;
 			case MSG_IN_ON_RIDE_START:
+				startActivityIfNeeded(RideActivity.class, STATE_RIDE);
 				mCurrentState = STATE_RIDE;
-				startActivity(RideActivity.class);
 				break;
 			default:
 				DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
@@ -108,8 +109,11 @@ public class DeveloperTestApplication extends Application {
 		return mCurrentState;
 	}
 	
-	protected void startActivity(Class<?> activity)
+	protected void startActivityIfNeeded(Class<?> activity, int newState)
 	{
+		if (mCurrentState == newState)
+			return;
+		
 		if (mCurrentActivity != null) {
 			mCurrentActivity.finish();
 			mCurrentActivity = null;
