@@ -7,5 +7,7 @@
     
     <string name="waiting_waiting">Waiting...</string>
     <string name="waiting_broadcast">Broadcast</string>
+    
+    <string name="service_send_error">Cannot sent a message to the service</string>
 
 </resources>

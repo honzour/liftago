@@ -11,6 +11,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.widget.Toast;
 
 public class DeveloperTestApplication extends Application {
 
@@ -43,13 +44,7 @@ public class DeveloperTestApplication extends Application {
 		@Override
 		public void onServiceConnected(ComponentName className, IBinder service) {
 			mService = new Messenger(service);
-			try {
-				Message msg = Message.obtain(null, MSG_OUT_REGISTER);
-				msg.replyTo = mMessenger;
-				mService.send(msg);
-			} catch (RemoteException e) {
-				// TODO
-			}
+			sendMessage(MSG_OUT_REGISTER);
 		}
 
 		@Override
@@ -62,6 +57,7 @@ public class DeveloperTestApplication extends Application {
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_IN_STATE:
+				mCurrentState = msg.arg1; 
 				switch (msg.arg1) {
 				case STATE_WAITING:
 					startActivity(WaitingActivity.class);
@@ -71,12 +67,25 @@ public class DeveloperTestApplication extends Application {
 					
 				}
 				break;
+			case MSG_IN_OK:
+				break;
+			case MSG_IN_ERROR:
+				break;
+			case MSG_IN_ON_RIDE_FINISH:
+				break;
+			case MSG_IN_ON_RIDE_START:
+				break;
 			default:
 				break;
 			}
 		}
 	}
 
+	public int getCurrentState()
+	{
+		return mCurrentState;
+	}
+	
 	protected void startActivity(Class<?> activity)
 	{
 		if (mCurrentActivity != null) {
@@ -95,6 +104,17 @@ public class DeveloperTestApplication extends Application {
 		sInstance = this;
 	}
 	
+	protected void sendMessage(int message)
+	{
+		try {
+			Message msg = Message.obtain(null, MSG_OUT_REGISTER);
+			msg.replyTo = mMessenger;
+			mService.send(msg);
+		} catch (RemoteException e) {
+			Toast.makeText(this, R.string.service_send_error, Toast.LENGTH_LONG).show();
+		}
+	}
+	
 	public void bindService()
 	{
 		if (!mBound)
@@ -111,5 +131,11 @@ public class DeveloperTestApplication extends Application {
 			mBound = false;
 			unbindService(mConnection);
 		}
+	}
+	
+	public void broadcast()
+	{
+		mCurrentState = STATE_BROADCASTING;
+		sendMessage(MSG_OUT_ON_BROADCAST);
 	}
 }
