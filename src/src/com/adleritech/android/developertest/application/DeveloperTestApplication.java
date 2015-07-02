@@ -69,8 +69,8 @@ public class DeveloperTestApplication extends Application {
 						mCurrentActivity.finish();
 						mCurrentActivity = null;
 					}
-					Intent intent = new Intent(sInstance,
-							WaitingActivity.class);
+					Intent intent = new Intent(sInstance, WaitingActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 					sInstance.startActivity(intent);
 				}
 				break;
