@@ -64,15 +64,11 @@ public class DeveloperTestApplication extends Application {
 			case MSG_IN_STATE:
 				switch (msg.arg1) {
 				case STATE_WAITING:
+					startActivity(WaitingActivity.class);
+					break;
 				case STATE_BROADCASTING:
 				case STATE_RIDE:
-					if (mCurrentActivity != null) {
-						mCurrentActivity.finish();
-						mCurrentActivity = null;
-					}
-					Intent intent = new Intent(sInstance, WaitingActivity.class);
-					intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-					sInstance.startActivity(intent);
+					
 				}
 				break;
 			default:
@@ -81,7 +77,16 @@ public class DeveloperTestApplication extends Application {
 		}
 	}
 
-	
+	protected void startActivity(Class<?> activity)
+	{
+		if (mCurrentActivity != null) {
+			mCurrentActivity.finish();
+			mCurrentActivity = null;
+		}
+		Intent intent = new Intent(sInstance, activity);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		sInstance.startActivity(intent);
+	}
 
 
 	@Override
