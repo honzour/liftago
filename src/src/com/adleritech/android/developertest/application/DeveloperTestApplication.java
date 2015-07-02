@@ -36,6 +36,8 @@ public class DeveloperTestApplication extends Application {
 	public Activity mCurrentActivity = null;
 	protected Messenger mService = null;
 	final Messenger mMessenger = new Messenger(new IncomingHandler());
+	protected boolean mBound = false;
+	
 	protected ServiceConnection mConnection = new ServiceConnection() {
 
 		@Override
@@ -52,7 +54,6 @@ public class DeveloperTestApplication extends Application {
 
 		@Override
 		public void onServiceDisconnected(ComponentName name) {
-
 		}
 	};
 	
@@ -89,9 +90,14 @@ public class DeveloperTestApplication extends Application {
 		sInstance = this;
 		Intent intent = new Intent(SERVICE_NAME);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+		mBound = true;
 	}
 
 	public void unbindService() {
-		unbindService(mConnection);
+		if (mBound)
+		{
+			mBound = false;
+			unbindService(mConnection);
+		}
 	}
 }
