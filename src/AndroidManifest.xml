@@ -25,14 +25,17 @@
         
         <activity
             android:name="WaitingActivity"
+            android:excludeFromRecents="true"
             android:label="@string/waiting_waiting" />
         
         <activity
             android:name="RideActivity"
+            android:excludeFromRecents="true"
             android:label="@string/ride" />
                 
         <activity
             android:name="BroadcastingActivity"
+            android:excludeFromRecents="true"
             android:label="@string/broadcasting" />
     </application>
 </manifest>

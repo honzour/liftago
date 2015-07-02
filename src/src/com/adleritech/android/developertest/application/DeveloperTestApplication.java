@@ -37,8 +37,9 @@ public class DeveloperTestApplication extends Application {
 	protected int mCurrentState = STATE_UNDEFINED;
 	public Activity mCurrentActivity = null;
 	protected Messenger mService = null;
-	final Messenger mMessenger = new Messenger(new IncomingHandler());
+	protected final Messenger mMessenger = new Messenger(new IncomingHandler());
 	protected boolean mBound = false;
+	public boolean mBroadcastButtonPressed = false;
 	
 	protected ServiceConnection mConnection = new ServiceConnection() {
 
@@ -56,6 +57,7 @@ public class DeveloperTestApplication extends Application {
 	public void handleInState(int newState) {
 		switch (newState) {
 		case STATE_WAITING:
+			mBroadcastButtonPressed = false;
 			startActivityIfNeeded(WaitingActivity.class, newState);
 			break;
 		case STATE_BROADCASTING:
@@ -76,6 +78,8 @@ public class DeveloperTestApplication extends Application {
 		
 		@Override
 		public void handleMessage(Message msg) {
+			if (!mBound)
+				return;
 			switch (msg.what) {
 			case MSG_IN_STATE:
 				handleInState(msg.arg1);
@@ -91,6 +95,7 @@ public class DeveloperTestApplication extends Application {
 				handleInState(msg.arg1);
 				break;
 			case MSG_IN_ON_RIDE_FINISH:
+				mBroadcastButtonPressed = false;
 				startActivityIfNeeded(WaitingActivity.class, STATE_WAITING);
 				mCurrentState = STATE_WAITING;
 				break;
