@@ -88,9 +88,16 @@ public class DeveloperTestApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 		sInstance = this;
-		Intent intent = new Intent(SERVICE_NAME);
-		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
-		mBound = true;
+	}
+	
+	public void bindService()
+	{
+		if (!mBound)
+		{
+			Intent intent = new Intent(SERVICE_NAME);
+			bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+			mBound = true;
+		}
 	}
 
 	public void unbindService() {
