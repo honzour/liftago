@@ -1,6 +1,11 @@
 <resources>
 
     <string name="app_name">DeveloperTest</string>
+    
+    <string name="splash_splash_screen">Splash screen</string>
     <string name="splash_initialization">Initialization</string>
+    
+    <string name="waiting_waiting">Waiting...</string>
+    <string name="waiting_broadcast">Broadcast</string>
 
 </resources>

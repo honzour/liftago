@@ -1,5 +1,6 @@
 package com.adleritech.android.developertest.application;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -12,9 +13,9 @@ import android.os.Messenger;
 import android.os.RemoteException;
 
 public class DeveloperTestApplication extends Application {
-	
+
 	public static DeveloperTestApplication sInstance;
-	
+
 	protected static final int MSG_OUT_REGISTER = 1;
 	protected static final int MSG_OUT_ON_BROADCAST = 2;
 	protected static final int MSG_OUT_GET_STATE = 3;
@@ -28,59 +29,58 @@ public class DeveloperTestApplication extends Application {
 	protected static final int STATE_WAITING = 1;
 	protected static final int STATE_BROADCASTING = 2;
 	protected static final int STATE_RIDE = 3;
-	
+
 	protected static final String SERVICE_NAME = "com.adleritech.android.developertest.SimulatorService";
-	
-	protected int mCurrentState  = STATE_WAITING;
-	
-	
-    protected ServiceConnection mConnection = new ServiceConnection() {
-    
-    class IncomingHandler extends Handler {
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                case  MSG_IN_STATE:
-                	switch (msg.arg1)
-                	{
-                	case STATE_WAITING:
-                	case STATE_BROADCASTING:
-                	case STATE_RIDE:
-                		Intent intent = new Intent(sInstance, RideActivity.class);
-                		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                		sInstance.startActivity(intent);
-                	}
-                    break;
-                default:
-                	break;
-            }
-        }
-    }
-    
-    Messenger mService = null;
-    final Messenger mMessenger = new Messenger(new IncomingHandler());
 
-        @Override
-        public void onServiceConnected(ComponentName className,
-                IBinder service) {
-        	mService = new Messenger(service);
-        	try
-        	{
-        		Message msg = Message.obtain(null, MSG_OUT_REGISTER);
-        		msg.replyTo = mMessenger;
-        		mService.send(msg);
-        	}
-        	catch (RemoteException e)
-        	{
-        		// TODO
-        	}
-        }
+	protected int mCurrentState = STATE_WAITING;
+	public Activity mCurrentActivity = null;
+	protected Messenger mService = null;
+	final Messenger mMessenger = new Messenger(new IncomingHandler());
+	protected ServiceConnection mConnection = new ServiceConnection() {
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
+		@Override
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			mService = new Messenger(service);
+			try {
+				Message msg = Message.obtain(null, MSG_OUT_REGISTER);
+				msg.replyTo = mMessenger;
+				mService.send(msg);
+			} catch (RemoteException e) {
+				// TODO
+			}
+		}
 
-        }
-    };
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+
+		}
+	};
+	
+	class IncomingHandler extends Handler {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+			case MSG_IN_STATE:
+				switch (msg.arg1) {
+				case STATE_WAITING:
+				case STATE_BROADCASTING:
+				case STATE_RIDE:
+					if (mCurrentActivity != null) {
+						mCurrentActivity.finish();
+						mCurrentActivity = null;
+					}
+					Intent intent = new Intent(sInstance,
+							WaitingActivity.class);
+					sInstance.startActivity(intent);
+				}
+				break;
+			default:
+				break;
+			}
+		}
+	}
+
+	
 
 
 	@Override
@@ -90,7 +90,7 @@ public class DeveloperTestApplication extends Application {
 		Intent intent = new Intent(SERVICE_NAME);
 		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 	}
-	
+
 	public void unbindService() {
 		unbindService(mConnection);
 	}
