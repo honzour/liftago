@@ -53,32 +53,51 @@ public class DeveloperTestApplication extends Application {
 	};
 	
 	class IncomingHandler extends Handler {
+		
+		protected void handleInState(Message msg) {
+			switch (msg.arg1) {
+			case STATE_WAITING:
+				startActivity(WaitingActivity.class);
+				break;
+			case STATE_BROADCASTING:
+				startActivity(BroadcastingActivity.class);
+				break;
+			case STATE_RIDE:
+				startActivity(RideActivity.class);
+				break;
+			default:
+				DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
+				break;
+			}
+			mCurrentState = msg.arg1;
+		}
+		
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
 			case MSG_IN_STATE:
-				mCurrentState = msg.arg1; 
-				switch (msg.arg1) {
-				case STATE_WAITING:
-					startActivity(WaitingActivity.class);
-					break;
-				case STATE_BROADCASTING:
-					startActivity(BroadcastingActivity.class);
-					break;
-				case STATE_RIDE:
-					startActivity(RideActivity.class);
-					break;
-				}
+				handleInState(msg);
 				break;
 			case MSG_IN_OK:
+				if (getCurrentState() == STATE_WAITING)
+				{
+					mCurrentState = STATE_BROADCASTING;
+					startActivity(BroadcastingActivity.class);
+				}
 				break;
 			case MSG_IN_ERROR:
+				handleInState(msg);
 				break;
 			case MSG_IN_ON_RIDE_FINISH:
+				mCurrentState = STATE_WAITING;
+				startActivity(WaitingActivity.class);
 				break;
 			case MSG_IN_ON_RIDE_START:
+				mCurrentState = STATE_RIDE;
+				startActivity(RideActivity.class);
 				break;
 			default:
+				DeveloperTestApplication.this.sendMessage(MSG_OUT_GET_STATE);
 				break;
 			}
 		}
@@ -110,7 +129,7 @@ public class DeveloperTestApplication extends Application {
 	protected void sendMessage(int message)
 	{
 		try {
-			Message msg = Message.obtain(null, MSG_OUT_REGISTER);
+			Message msg = Message.obtain(null, message);
 			msg.replyTo = mMessenger;
 			mService.send(msg);
 		} catch (RemoteException e) {
@@ -138,7 +157,6 @@ public class DeveloperTestApplication extends Application {
 	
 	public void broadcast()
 	{
-		mCurrentState = STATE_BROADCASTING;
 		sendMessage(MSG_OUT_ON_BROADCAST);
 	}
 }
